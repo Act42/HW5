@@ -1,18 +1,22 @@
 import socket
+import struct
 
-def client():
-    host = "127.0.0.1"
-    port = 12345
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((host, port))
+def send_message(sock, message):
+    message_len = len(message)
+    packed_len = struct.pack("!I", message_len)
+    sock.sendall(packed_len)
+    sock.sendall(message.encode())
 
-    for i in range(100):
-        message = f"Повідомлення номер {i + 1}".encode('utf-8')
-        message_length = len(message)
-        client_socket.send(message_length.to_bytes(4, byteorder='big'))
-        client_socket.send(message)
+host = '127.0.0.1'
+port = 12345
 
-    client_socket.close()
+try:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        client_socket.connect((host, port))
 
-if __name__ == "__main__":
-    client()
+        for i in range(100):
+            message = f"message {i + 1}"
+            send_message(client_socket, message)
+            print(f"Message sent: {message}")
+except Exception as ex:
+    print(ex)
